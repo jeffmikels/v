@@ -502,6 +502,7 @@ assert aardvark_str == 'aardvark'
 assert '\xc0'[0] == byte(0xc0)
 star_str := '\u2605'           // Unicode (e.g. ★) can be specified directly too
 assert star_str == '★'
+assert '\xe2\x98\x85' == '★'   // UTF-8 can be specified too.
 ```
 
 In V, a string is a read-only array of bytes. Unicode characters are encoded using UTF-8:
@@ -559,49 +560,6 @@ assert '-0b1111_0000_1010'.int() == -3850
 ```
 
 For more advanced `string` processing and conversions, refer to the [vlib/strconv](https://modules.vlang.io/strconv.html) module.
-
-### Runes
-
-A `rune` represents a single unicode character and is an alias for `u32`. To denote them, use ` (backticks) :
-
-```v
-rocket := `🚀`
-```
-
-Escape codes also work in a `rune` literal:
-
-```v
-
-```
-
-A `rune` can be converted to a UTF-8 string by using the `.str()` method.
-
-```v
-rocket := `🚀`
-assert rocket.str() == '🚀'
-```
-
-A `rune` can be converted to UFT-8 bytes by using the `.bytes()` method.
-
-```v
-rocket := `🚀`
-assert rocket.bytes() == [0xf0, 0x9f, 0x9a, 0x80]
-```
-
-But remember that strings are indexed as bytes, not runes, so beware:
-
-```v
-rocket_string := '🚀'
-assert rocket_string[0] != `🚀`
-assert 'aloha!'[0] == `a`
-```
-
-A string can be converted to runes by the `.runes()` method.
-
-```v
-hello := 'Hello World 👋'
-hello_runes := hello.runes() // [`H`, `e`, `l`, `l`, `o`, ` `, `W`, `o`, `r`, `l`, `d`, ` `, `👋`]
-```
 
 ### String interpolation
 
@@ -661,6 +619,56 @@ or use string interpolation (preferred):
 ```v
 age := 12
 println('age = $age')
+```
+
+### Runes
+
+A `rune` represents a single Unicode character and is an alias for `u32`. To denote them, use ` (backticks) :
+
+```v
+rocket := `🚀`
+```
+
+A `rune` can be converted to a UTF-8 string by using the `.str()` method.
+
+```v
+rocket := `🚀`
+assert rocket.str() == '🚀'
+```
+
+A `rune` can be converted to UTF-8 bytes by using the `.bytes()` method.
+
+```v
+rocket := `🚀`
+assert rocket.bytes() == [0xf0, 0x9f, 0x9a, 0x80]
+```
+
+Escape codes also work in a `rune` literal:
+
+```v
+assert `\x61` == `a`
+assert `\u2605` == `★`
+assert `\u2605`.bytes() == [0xe2, 0x98, 0x85]
+assert `\xe29885`.bytes() == '\xe2\x98\x85'.bytes()
+```
+
+Note that `rune` literals employ a slightly different escape syntax than strings do.
+A `string` is an array of bytes, so in a string, you do hex escapes one byte at a time,
+but runes are Unicode characters, so in a rune, you specify the entire UTF-8 hex value at once.
+
+Also remember that strings are indexed as bytes, not runes, so beware:
+
+```v
+rocket_string := '🚀'
+assert rocket_string[0] != `🚀`
+assert 'aloha!'[0] == `a`
+```
+
+A string can be converted to runes by the `.runes()` method.
+
+```v
+hello := 'Hello World 👋'
+hello_runes := hello.runes() // [`H`, `e`, `l`, `l`, `o`, ` `, `W`, `o`, `r`, `l`, `d`, ` `, `👋`]
 ```
 
 ### Numbers
