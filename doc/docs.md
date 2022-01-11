@@ -691,21 +691,19 @@ Hex, Unicode, and Octal escape sequences also work in a `rune` literal:
 
 ```v
 assert `\x61` == `a`
+assert `\141` == `a`
+assert `\u0061` == `a`
 
+// multibyte literals work too
 assert `\u2605` == `★`
 assert `\u2605`.bytes() == [0xe2, 0x98, 0x85]
-assert `\70514205`.bytes() == [0xe2, 0x98, 0x85]
-assert `\xe29885`.bytes() == [0xe2, 0x98, 0x85]
+assert `\xe2\x98\x85`.bytes() == [0xe2, 0x98, 0x85]
+assert `\342\230\205`.bytes() == [0xe2, 0x98, 0x85]
 ```
 
-Note that `rune` literals employ a slightly different escape syntax than strings do.
-A `string` is an array of bytes, so in a string, you do hex escapes one byte at a time,
-but runes are Unicode characters, so in a `rune`, specify the entire UTF-8 hex value at once.
-
-```v
-assert `\70514205`.bytes() == '\342\230\205'.bytes()
-assert `\xe29885`.bytes() == '\xe2\x98\x85'.bytes()
-```
+Note that `rune` literals use the same escape syntax as strings, but they can only hold
+one unicode character. Therefore, if your code does not specify a single Unicode character,
+you will receive an error at compile time.
 
 Also remember that strings are indexed as bytes, not runes, so beware:
 
