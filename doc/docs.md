@@ -488,15 +488,20 @@ d := b + x     // d is of type `f64` - automatic promotion of `x`'s value
 
 ### Strings
 
-```v
+```v nofmt
 name := 'Bob'
-println(name.len)
-println(name[0]) // indexing gives a byte B
-println(name[1..3]) // slicing gives a string 'ob'
-windows_newline := '\r\n' // escape special characters like in C
+assert name.len == 3       // will print 3
+assert name[0] == byte(66) // indexing gives a byte, byte(66) == `B`
+assert name[1..3] == 'ob'  // slicing gives a string 'ob'
+
+// escape codes
+windows_newline := '\r\n'      // escape special characters like in C
 assert windows_newline.len == 2
-aardvark_string := '\x61ardvark' // bytes can be directly specified using `\x##` notation
-star_string := '\u2605' // (★) unicode can be specified directly too
+aardvark_str := '\x61ardvark'  // arbitrary bytes can be directly specified using `\x##` notation
+assert aardvark_str == 'aardvark'
+assert '\xc0'[0] == byte(0xc0)
+star_str := '\u2605'           // Unicode (e.g. ★) can be specified directly too
+assert star_str == '★'
 ```
 
 In V, a string is a read-only array of bytes. Unicode characters are encoded using UTF-8:
@@ -522,8 +527,8 @@ s[0] = `H` // not allowed
 > error: cannot assign to `s[i]` since V strings are immutable
 
 Note that indexing a string will produce a `byte`, not a `rune` nor another `string`.
-Indexes correspond to bytes in the string, not Unicode code points. If you want to
-convert the `byte` to a `string`, use the `ascii_str()` method:
+Indexes correspond to _bytes_ in the string, not Unicode code points. If you want to
+convert the `byte` to a `string`, use the `.ascii_str()` method on the `byte`:
 
 ```v
 country := 'Netherlands'
@@ -534,33 +539,53 @@ println(country[0].ascii_str()) // Output: N
 Both single and double quotes can be used to denote strings. For consistency,
 `vfmt` converts double quotes to single quotes unless the string contains a single quote character.
 
-For raw strings, prepend `r`. Raw strings are not escaped:
+For raw strings, prepend `r`. Escape handling is not done for raw strings:
 
 ```v
-s := r'hello\nworld'
+s := r'hello\nworld'         // the `\n` will be preserved as two characters
 println(s) // "hello\nworld"
 ```
 
 Strings can be easily converted to integers:
 
 ```v
-s := '42'
-n := s.int() // 42
+a := '42'
+b := s.int() // 42
+
+// all int literals are supported, parsed as unsigned ints
+assert '0xc3'.int() == 195
+assert '0b1111_0000_1010'.int() == 3850
+assert '-0b1111_0000_1010'.int() == -3850
 ```
+
+For more advanced `string` processing and conversions, refer to the [vlib/strconv](https://modules.vlang.io/strconv.html) module.
 
 ### Runes
 
-A `rune` represents a unicode character and is an alias for `u32`. To denote them, use ` (backticks) :
+A `rune` represents a single unicode character and is an alias for `u32`. To denote them, use ` (backticks) :
 
 ```v
 rocket := `🚀`
 ```
 
-A `rune` can be converted to a string by using the `.str()` method.
+Escape codes also work in a `rune` literal:
+
+```v
+
+```
+
+A `rune` can be converted to a UTF-8 string by using the `.str()` method.
 
 ```v
 rocket := `🚀`
 assert rocket.str() == '🚀'
+```
+
+A `rune` can be converted to UFT-8 bytes by using the `.bytes()` method.
+
+```v
+rocket := `🚀`
+assert rocket.bytes() == [0xf0, 0x9f, 0x9a, 0x80]
 ```
 
 But remember that strings are indexed as bytes, not runes, so beware:
@@ -5288,8 +5313,8 @@ With the example above:
   single block. `customflag` should be a snake*case identifier, it can not
   contain arbitrary characters (only lower case latin letters + numbers + `*`). NB: a combinatorial `\_d_customflag_linux.c.v`postfix will not work. If you do need a custom flag file, that has platform dependent code, use the postfix`\_d_customflag.v`, and then use plaftorm dependent compile time conditional blocks inside it, i.e. `$if linux {}` etc.
 
-- `_notd_customflag.v` => similar to \_d_customflag.v, but will be used
-  _only_ if you do NOT pass `-d customflag` to V.
+- `_notd_customflag.v` => similar to \_d*customflag.v, but will be used
+  \_only* if you do NOT pass `-d customflag` to V.
 
 ## Compile time pseudo variables
 
